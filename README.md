@@ -1,128 +1,140 @@
-# SnowRunner Build Stage Lookup
+# SnowRunner Baustufen-Suche
 
-Type a model name, get the exact **build stage state names** it supports — the
-strings you paste into `stagesProgress` in the Editor's *Model Building
-Settings*.
+Modellnamen eintippen und die exakten **Statusnamen der Baustufen** erhalten —
+also genau die Zeichenketten, die in der `stagesProgress`-Liste in den *Model
+Building Settings* des Editors stehen müssen.
 
-No more opening `initial.pak` in 7-Zip, digging through `[media]\classes\models\`
-and a dozen `_dlc` subfolders, and reading `<Subset>` tags by hand.
+Kein Öffnen von `initial.pak` in 7-Zip mehr, kein Durchsuchen von
+`[media]\classes\models\` und einem Dutzend `_dlc`-Unterordnern, kein manuelles
+Auslesen von `<Subset>`-Tags.
 
 ---
 
 ## Download
 
-Grab **`StageLookup.exe`** from the
-[latest release](../../releases/latest). One file, no installer, no Python
-needed. Put it anywhere and double-click it.
+**`snowrunner_helper.exe`** aus dem
+[neuesten Release](../../releases/latest) herunterladen. Eine einzige Datei,
+kein Installer, kein Python nötig. Irgendwo hinlegen und doppelklicken.
 
-> **Windows will probably warn you the first time.** The exe isn't code-signed,
-> so SmartScreen shows *"Windows protected your PC"*. Click **More info** →
-> **Run anyway**. If you'd rather not, run from source instead (see below).
+> **Windows warnt beim ersten Start.** Die EXE ist nicht signiert, deshalb zeigt
+> SmartScreen *„Der Computer wurde durch Windows geschützt"*. Auf **Weitere
+> Informationen** → **Trotzdem ausführen** klicken. Wer das nicht möchte, kann
+> das Programm stattdessen aus dem Quellcode starten (siehe unten).
 
-## Using it
+## Bedienung
 
-1. **First launch** asks for your SnowRunner folder — the one containing `en_us`.
-   It tries to autodetect Steam and Epic installs first, so usually you just
-   confirm what it found.
-2. It indexes the archive once (under a second) and caches the result.
-3. Type part of a model name. Click a result.
-4. Click any state name to copy it, or **Copy all** for the whole list.
-   `Ctrl+C` also copies all. `Esc` clears the search.
+1. **Beim ersten Start** wird nach dem SnowRunner-Ordner gefragt — dem Ordner,
+   der `en_us` enthält. Steam- und Epic-Installationen werden automatisch
+   gesucht, meist muss man den Fund nur bestätigen.
+2. Das Archiv wird einmal indiziert (unter einer Sekunde) und zwischengespeichert.
+3. Einen Teil des Modellnamens eintippen. Auf ein Ergebnis klicken.
+4. Auf einen Statusnamen klicken, um ihn zu kopieren, oder **Alle kopieren** für
+   die komplette Liste. `Strg+C` kopiert ebenfalls alle, `Esc` leert die Suche.
 
-State names are copied **exactly** as they appear in the game files — never
-re-cased, trimmed, or "cleaned up". The Editor needs them verbatim; a typo
-silently breaks the build animation.
+Statusnamen werden **exakt** so kopiert, wie sie in den Spieldateien stehen —
+niemals umbenannt, umformatiert oder „bereinigt". Der Editor braucht sie
+wortwörtlich; ein Tippfehler zerstört die Bau-Animation stillschweigend.
 
-If a model appears in both the base game and a DLC, you get a dropdown to pick
-which copy you mean, since their states can differ.
+Kommt ein Modell sowohl im Grundspiel als auch in einem DLC vor, erscheint ein
+Auswahlfeld, denn die Statusnamen können sich zwischen den Fassungen
+unterscheiden.
 
-## What shows up in the list
+## Was in der Liste erscheint
 
-By default the list shows only models that **actually define states** — 308 of
-them in the current build.
+Standardmäßig zeigt die Liste nur Modelle, die **tatsächlich Status definieren** —
+im aktuellen Build sind das 308 Stück.
 
-This is deliberately *not* a filter on the `_objective` filename suffix, which
-is the obvious approach and is wrong. Measured against the shipped archive:
+Bewusst wird dabei **nicht** nach der Namensendung `_objective` gefiltert. Das
+wäre der naheliegende Weg und er ist falsch. Gemessen am ausgelieferten Archiv:
 
-- 30 usable models carry `_objective` in the *middle* of the name
+- 30 nutzbare Modelle tragen `_objective` *mitten* im Namen
   (`conveyor_objective_01`, `cube_objective_09`,
   `rus_controlbunker_02_1_part_objectives`).
-- 9 more have no "objective" in the name at all, but define real build stages —
-  `concrete_block_01_us_07`, `tatra_steamshop`, `railway_switch_01_ru17`,
-  `race_scene_us07`, `rus_launchpad_hangar_01_doors`, and others.
-- Meanwhile `rock_03_rus_objective` is named for it but defines no states.
+- 9 weitere haben überhaupt kein „objective" im Namen, definieren aber echte
+  Baustufen — `concrete_block_01_us_07`, `tatra_steamshop`,
+  `railway_switch_01_ru17`, `race_scene_us07`, `rus_launchpad_hangar_01_doors`
+  und andere.
+- Umgekehrt heißt `rock_03_rus_objective` zwar so, definiert aber keinen Status.
 
-Filtering on the name hides 39 models you can use and offers one you can't.
-The tool reads the `<Subset>` tags instead, and follows `<_parent>` inheritance
-so models like `rocket_broken_02_objective` still resolve to the states they
-inherit.
+Ein Filter über den Dateinamen versteckt also 39 nutzbare Modelle und bietet
+eines an, das nicht funktioniert. Dieses Programm liest stattdessen die
+`<Subset>`-Tags und folgt der Vererbung über `<_parent>`, sodass Modelle wie
+`rocket_broken_02_objective` weiterhin die geerbten Status anzeigen.
 
-Tick **"Also show models with no states"** to browse all 4,740 model classes.
+Mit dem Häkchen **„Auch Modelle ohne Status anzeigen"** lassen sich alle 4.740
+Modellklassen durchsuchen.
 
-## State name vocabulary
+## Vorkommende Statusnamen
 
-Naming is not consistent across models, which is the whole reason this tool
-exists. What ships in the game:
+Die Benennung ist zwischen den Modellen **nicht** einheitlich — genau deshalb
+gibt es dieses Programm. Was im Spiel vorkommt:
 
-| Family | Examples |
+| Familie | Beispiele |
 | --- | --- |
-| Build stages | `build_stage_0`, `build_stage_1`, `build_stage_2`, `build_stage_complete` |
-| Start/end (largest group) | `state_start`, `state_end`, `state_fin`, `state_done` |
-| Numbered states | `state_00`–`state_02`, `stage_00`–`stage_03` |
-| Smoke cubes | `stage_visible`, `stage_hidden` |
-| Doors | `stage_opened`, `stage_closed` |
-| One-offs | `cargo_carriage`, `empty_carriage`, `hide_cargo_carriage` |
+| Baustufen | `build_stage_0`, `build_stage_1`, `build_stage_2`, `build_stage_complete` |
+| Start/Ende (größte Gruppe) | `state_start`, `state_end`, `state_fin`, `state_done` |
+| Nummerierte Status | `state_00`–`state_02`, `stage_00`–`stage_03` |
+| Rauchwürfel | `stage_visible`, `stage_hidden` |
+| Tore | `stage_opened`, `stage_closed` |
+| Einzelfälle | `cargo_carriage`, `empty_carriage`, `hide_cargo_carriage` |
 
-Never guess these. Look them up.
+Niemals raten. Immer nachschlagen.
 
-## Where the data comes from
+## Woher die Daten kommen
 
-`initial.pak` in your install:
+Aus `initial.pak` in der Installation:
 
 ```
-<game>\en_us\preload\paks\client\initial.pak
+<Spiel>\en_us\preload\paks\client\initial.pak
 ```
 
-It's a plain zip (~28 MB — class XMLs, not assets). This is the *only* pak that
-contains `classes/models/*.xml`; `shared.pak` is meshes, `editor.pak` is
-prebuild data and textures, and the `level_*.pak` files are scenes and textures.
-If someone tells you there's another pak or folder with more objective objects,
-there isn't — they're most likely seeing models a name-based filter was hiding.
+Das ist ein gewöhnliches ZIP-Archiv (~28 MB — Klassen-XMLs, keine Assets) und
+das **einzige** Pak, das `classes/models/*.xml` enthält. `shared.pak` enthält
+Meshes, `editor.pak` Prebuild-Daten und Texturen, die `level_*.pak`-Dateien
+Szenen und Texturen. Wenn jemand behauptet, es gäbe noch ein weiteres Pak oder
+einen weiteren Ordner mit zusätzlichen Objective-Objekten: gibt es nicht. Sehr
+wahrscheinlich sieht diese Person Modelle, die ein namensbasierter Filter
+versteckt hat.
 
-**The tool is strictly read-only.** It never writes to `initial.pak` or anything
-in your game folder. Its only writes are its own config and index cache in
+**Das Programm arbeitet ausschließlich lesend.** Es schreibt niemals in
+`initial.pak` oder sonst etwas im Spielordner. Geschrieben werden nur die eigene
+Konfiguration und der Index-Cache unter
 `%APPDATA%\snowrunner-stage-lookup\`.
 
-The cache is keyed to the archive's size and modification time, so a game update
-triggers an automatic rebuild. There's a **Rebuild index** button if you want to
-force one.
+Der Cache ist an Größe und Änderungsdatum des Archivs gekoppelt, ein
+Spiel-Update löst also automatisch einen Neuaufbau aus. Die Schaltfläche
+**Index neu aufbauen** erzwingt ihn manuell.
 
-## Running from source
+## Aus dem Quellcode starten
 
-Needs Python 3.9+ with Tkinter (both come with the python.org installer).
-No third-party packages.
+Benötigt Python 3.9+ mit Tkinter (beides im Installer von python.org enthalten).
+Keine Pakete von Drittanbietern.
 
 ```
 python stage_lookup.py
 ```
 
-Tests, which use a synthetic archive and need no game files:
+Die Tests laufen gegen ein synthetisches Archiv und brauchen keine Spieldateien:
 
 ```
 python -m unittest test_stage_lookup -v
 ```
 
-Building the exe yourself:
+Die EXE selbst bauen:
 
 ```
 pip install pyinstaller
-pyinstaller --onefile --windowed --name StageLookup stage_lookup.py
+pyinstaller --onefile --windowed --name snowrunner_helper stage_lookup.py
 ```
 
-## Notes
+## Hinweise
 
-Not affiliated with Saber Interactive or Focus Entertainment. SnowRunner is
-their trademark. This tool ships no game content — it reads the files already on
-your disk.
+Die Oberfläche ist deutsch. Quellcode, Kommentare und die Entwicklerdokumentation
+(`CLAUDE.md`, `PROMPT.md`) sind englisch. Statusnamen aus dem Spiel werden
+grundsätzlich nicht übersetzt — sie sind Daten.
 
-Licensed under the [MIT License](LICENSE).
+Nicht mit Saber Interactive oder Focus Entertainment verbunden. SnowRunner ist
+deren Marke. Dieses Programm liefert keinerlei Spielinhalte mit — es liest nur
+die Dateien, die ohnehin schon auf der Festplatte liegen.
+
+Veröffentlicht unter der [MIT-Lizenz](LICENSE).

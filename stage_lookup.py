@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""SnowRunner Build Stage Lookup.
+"""SnowRunner Baustufen-Suche.
 
-Search a model name, get the exact `stagesProgress` state names to paste into
-the Editor's Model Building Settings. Reads the game's initial.pak directly.
+Modellnamen suchen und die exakten `stagesProgress`-Statusnamen erhalten, die
+in die Model Building Settings des Editors gehören. Liest initial.pak direkt.
 
-Stdlib only. Run with:  python stage_lookup.py
+Die Oberfläche ist deutsch; Code und Kommentare bleiben englisch.
+Statusnamen aus dem Spiel werden niemals übersetzt — sie sind Daten und müssen
+wortwörtlich erhalten bleiben.
+
+Nur Standardbibliothek. Start mit:  python stage_lookup.py
 """
 
 from __future__ import annotations
@@ -83,7 +87,7 @@ class PakError(Exception):
 def find_pak(game_root) -> Path:
     """Resolve <game_root>/en_us/preload/paks/client/initial.pak, or raise."""
     if not game_root or not str(game_root).strip():
-        raise PakError("No SnowRunner folder set.")
+        raise PakError("Kein SnowRunner-Ordner festgelegt.")
     root = Path(str(game_root).strip().strip('"'))
     if root.name.lower() == "initial.pak":  # user pointed straight at the file
         pak = root
@@ -91,9 +95,9 @@ def find_pak(game_root) -> Path:
         pak = root / PAK_SUBPATH
     if not pak.is_file():
         raise PakError(
-            "initial.pak not found.\nExpected it at:\n"
-            f"{pak}\n\nPick the SnowRunner install folder itself "
-            "(the one containing the 'en_us' folder)."
+            "initial.pak wurde nicht gefunden.\nErwartet unter:\n"
+            f"{pak}\n\nBitte den SnowRunner-Installationsordner selbst auswählen "
+            "(den Ordner, der 'en_us' enthält)."
         )
     return pak
 
@@ -156,11 +160,13 @@ def build_index(pak_path, progress_cb=None) -> dict:
                 if progress_cb is not None and (i % 250 == 0 or i == total - 1):
                     progress_cb(i + 1, total)
     except zipfile.BadZipFile as exc:
-        raise PakError(f"{pak_path.name} is not a readable zip archive: {exc}") from exc
+        raise PakError(
+            f"{pak_path.name} ist kein lesbares ZIP-Archiv: {exc}"
+        ) from exc
     except OSError as exc:
         raise PakError(
-            f"Could not open {pak_path}.\n{exc}\n"
-            "If SnowRunner or the Editor is running, close it and try again."
+            f"{pak_path} konnte nicht geöffnet werden.\n{exc}\n"
+            "Falls SnowRunner oder der Editor läuft, bitte schließen und erneut versuchen."
         ) from exc
 
     return {
@@ -206,10 +212,11 @@ def read_model_xml(pak_path, archive_path) -> bytes:
             return zf.read(archive_path)
     except KeyError as exc:
         raise PakError(
-            f"{archive_path} is no longer in the archive (rebuild the index)."
+            f"{archive_path} ist nicht mehr im Archiv enthalten "
+            "(bitte Index neu aufbauen)."
         ) from exc
     except (zipfile.BadZipFile, OSError) as exc:
-        raise PakError(f"Could not read {archive_path}: {exc}") from exc
+        raise PakError(f"{archive_path} konnte nicht gelesen werden: {exc}") from exc
 
 
 # --------------------------------------------------------------------------
@@ -335,7 +342,10 @@ def extract_stages(xml_bytes: bytes):
         if found:
             return _dedupe(found)
 
-    raise ParseError("Could not parse this XML, and no <Subset Name=...> tags were found in it.")
+    raise ParseError(
+        "Diese XML-Datei konnte nicht gelesen werden und enthält keine "
+        "<Subset Name=...>-Tags."
+    )
 
 
 _PARENT_RE = re.compile(
@@ -433,6 +443,11 @@ def autodetect_game_roots():
 # --------------------------------------------------------------------------
 
 
+def de_num(value) -> str:
+    """Group thousands the German way: 4740 -> '4.740'."""
+    return f"{value:,}".replace(",", ".")
+
+
 def _run_ui(hook=None):
     """Start the GUI. `hook` is a test seam: called with the App once it is up."""
     import tkinter as tk
@@ -443,7 +458,7 @@ def _run_ui(hook=None):
 
         def __init__(self, master, initial=""):
             super().__init__(master)
-            self.title("Locate SnowRunner")
+            self.title("SnowRunner finden")
             self.result = None
             self.transient(master)
             self.resizable(False, False)
@@ -453,15 +468,15 @@ def _run_ui(hook=None):
 
             ttk.Label(
                 frame,
-                text="Point this at your SnowRunner install folder\n"
-                     "(the folder that contains 'en_us').",
+                text="Bitte den SnowRunner-Installationsordner auswählen\n"
+                     "(den Ordner, der 'en_us' enthält).",
                 justify="left",
             ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
 
             self.var_path = tk.StringVar(value=initial)
             entry = ttk.Entry(frame, textvariable=self.var_path, width=64)
             entry.grid(row=1, column=0, sticky="we")
-            ttk.Button(frame, text="Locate SnowRunner folder…", command=self._browse).grid(
+            ttk.Button(frame, text="SnowRunner-Ordner suchen…", command=self._browse).grid(
                 row=1, column=1, padx=(8, 0)
             )
 
@@ -470,8 +485,8 @@ def _run_ui(hook=None):
 
             buttons = ttk.Frame(frame)
             buttons.grid(row=3, column=0, columnspan=2, sticky="e", pady=(12, 0))
-            ttk.Button(buttons, text="Cancel", command=self._cancel).pack(side="right")
-            ttk.Button(buttons, text="Use this folder", command=self._accept).pack(
+            ttk.Button(buttons, text="Abbrechen", command=self._cancel).pack(side="right")
+            ttk.Button(buttons, text="Diesen Ordner verwenden", command=self._accept).pack(
                 side="right", padx=(0, 8)
             )
 
@@ -479,11 +494,11 @@ def _run_ui(hook=None):
             if not initial and len(detected) == 1:
                 self.var_path.set(detected[0])
                 self.lbl_error.configure(
-                    text=f"Found an install at {detected[0]}", foreground="#0a7d33"
+                    text=f"Installation gefunden unter {detected[0]}", foreground="#0a7d33"
                 )
             elif not initial and len(detected) > 1:
                 self.lbl_error.configure(
-                    text="Found several installs:\n  " + "\n  ".join(detected),
+                    text="Mehrere Installationen gefunden:\n  " + "\n  ".join(detected),
                     foreground="#555555",
                 )
 
@@ -494,7 +509,7 @@ def _run_ui(hook=None):
             self.grab_set()
 
         def _browse(self):
-            chosen = filedialog.askdirectory(title="Select the SnowRunner folder", parent=self)
+            chosen = filedialog.askdirectory(title="SnowRunner-Ordner auswählen", parent=self)
             if chosen:
                 self.var_path.set(os.path.normpath(chosen))
 
@@ -527,7 +542,7 @@ def _run_ui(hook=None):
             self.busy = False
             self._status_token = 0
 
-            root.title("SnowRunner Build Stage Lookup")
+            root.title("SnowRunner Baustufen-Suche")
             try:
                 root.geometry(self.cfg.get("geometry") or "900x600")
             except tk.TclError:
@@ -552,7 +567,7 @@ def _run_ui(hook=None):
             top.grid(row=0, column=0, sticky="we")
             top.columnconfigure(1, weight=1)
 
-            ttk.Label(top, text="Search").grid(row=0, column=0, padx=(0, 8))
+            ttk.Label(top, text="Suche").grid(row=0, column=0, padx=(0, 8))
             self.var_search = tk.StringVar()
             self.var_search.trace_add("write", lambda *_a: self._refresh_results())
             self.entry_search = ttk.Entry(top, textvariable=self.var_search)
@@ -563,7 +578,7 @@ def _run_ui(hook=None):
             )
             ttk.Checkbutton(
                 top,
-                text="Also show models with no states",
+                text="Auch Modelle ohne Status anzeigen",
                 variable=self.var_show_all,
                 command=self._refresh_results,
             ).grid(row=0, column=2, padx=(10, 0))
@@ -574,7 +589,7 @@ def _run_ui(hook=None):
             left = ttk.Frame(panes)
             left.rowconfigure(1, weight=1)
             left.columnconfigure(0, weight=1)
-            self.lbl_results = ttk.Label(left, text="Models")
+            self.lbl_results = ttk.Label(left, text="Modelle")
             self.lbl_results.grid(row=0, column=0, sticky="w", pady=(0, 4))
             self.list_results = tk.Listbox(left, exportselection=False, activestyle="dotbox")
             self.list_results.grid(row=1, column=0, sticky="nsew")
@@ -589,7 +604,7 @@ def _run_ui(hook=None):
             right.columnconfigure(0, weight=1)
             right.rowconfigure(4, weight=1)
 
-            self.lbl_model = ttk.Label(right, text="Select a model",
+            self.lbl_model = ttk.Label(right, text="Modell auswählen",
                                        font=("Segoe UI", 12, "bold"))
             self.lbl_model.grid(row=0, column=0, sticky="w", pady=(0, 6))
 
@@ -608,7 +623,7 @@ def _run_ui(hook=None):
             path_row.columnconfigure(0, weight=1)
             self.entry_path = ttk.Entry(path_row, state="readonly")
             self.entry_path.grid(row=0, column=0, sticky="we")
-            ttk.Button(path_row, text="Copy path", command=self._copy_path).grid(
+            ttk.Button(path_row, text="Pfad kopieren", command=self._copy_path).grid(
                 row=0, column=1, padx=(8, 0)
             )
 
@@ -620,7 +635,7 @@ def _run_ui(hook=None):
             stages.grid(row=4, column=0, sticky="nsew", pady=(6, 0))
             stages.rowconfigure(1, weight=1)
             stages.columnconfigure(0, weight=1)
-            ttk.Label(stages, text="Stage state names (click one to copy it)").grid(
+            ttk.Label(stages, text="Statusnamen der Baustufen (zum Kopieren anklicken)").grid(
                 row=0, column=0, sticky="w", pady=(0, 4)
             )
             self.list_stages = tk.Listbox(stages, exportselection=False, activestyle="dotbox")
@@ -633,7 +648,7 @@ def _run_ui(hook=None):
 
             actions = ttk.Frame(right)
             actions.grid(row=5, column=0, sticky="we", pady=(8, 0))
-            self.btn_copy_all = ttk.Button(actions, text="Copy all",
+            self.btn_copy_all = ttk.Button(actions, text="Alle kopieren",
                                            command=self._copy_all, state="disabled")
             self.btn_copy_all.pack(side="left")
             self.lbl_copied = ttk.Label(actions, text="", foreground="#0a7d33")
@@ -644,12 +659,12 @@ def _run_ui(hook=None):
             status = ttk.Frame(root, padding=(10, 8))
             status.grid(row=2, column=0, sticky="we")
             status.columnconfigure(0, weight=1)
-            self.lbl_status = ttk.Label(status, text="Starting…", anchor="w")
+            self.lbl_status = ttk.Label(status, text="Startet…", anchor="w")
             self.lbl_status.grid(row=0, column=0, sticky="we")
-            self.btn_rebuild = ttk.Button(status, text="Rebuild index",
+            self.btn_rebuild = ttk.Button(status, text="Index neu aufbauen",
                                           command=self._rebuild_index)
             self.btn_rebuild.grid(row=0, column=1, padx=(8, 0))
-            ttk.Button(status, text="Change folder…", command=self._change_folder).grid(
+            ttk.Button(status, text="Ordner ändern…", command=self._change_folder).grid(
                 row=0, column=2, padx=(8, 0)
             )
 
@@ -669,7 +684,10 @@ def _run_ui(hook=None):
                 root_path = ""
             if not root_path:
                 if not self._change_folder(first_run=True):
-                    self._set_status("No SnowRunner folder set. Use 'Change folder…' to pick one.")
+                    self._set_status(
+                        "Kein SnowRunner-Ordner festgelegt. "
+                        "Mit 'Ordner ändern…' einen auswählen."
+                    )
                     return
             else:
                 self._use_game_root(root_path)
@@ -709,7 +727,7 @@ def _run_ui(hook=None):
                 return
             self.busy = True
             self.btn_rebuild.configure(state="disabled")
-            self._set_status("Indexing archive…")
+            self._set_status("Archiv wird indiziert…")
             pak_path = self.pak_path
             events = self.events
 
@@ -728,7 +746,10 @@ def _run_ui(hook=None):
                     events.put(("index_error", str(exc)))
                     return
                 except Exception as exc:  # never lose the UI to a surprise
-                    events.put(("index_error", f"Unexpected error while indexing: {exc}"))
+                    events.put((
+                        "index_error",
+                        f"Unerwarteter Fehler beim Indizieren: {exc}",
+                    ))
                     return
                 events.put(("index_done", index))
 
@@ -741,7 +762,10 @@ def _run_ui(hook=None):
                     kind = event[0]
                     if kind == "progress":
                         done, total = event[1], event[2]
-                        self._set_status(f"Indexing archive… {done:,} / {total:,} entries")
+                        self._set_status(
+                            f"Archiv wird indiziert… {de_num(done)} / "
+                            f"{de_num(total)} Einträge"
+                        )
                     elif kind == "index_done":
                         self.busy = False
                         self.btn_rebuild.configure(state="normal")
@@ -749,7 +773,7 @@ def _run_ui(hook=None):
                     elif kind == "index_error":
                         self.busy = False
                         self.btn_rebuild.configure(state="normal")
-                        self._set_status("Indexing failed.")
+                        self._set_status("Indizierung fehlgeschlagen.")
                         self.lbl_message.configure(text=event[1])
             except queue.Empty:
                 pass
@@ -762,13 +786,16 @@ def _run_ui(hook=None):
             self.model_names = sorted(self.paths)
             if not from_cache:
                 if not save_cache(self.pak_path, index):
-                    self._flash("Index cache could not be written — using memory only.")
+                    self._flash(
+                        "Index-Cache konnte nicht geschrieben werden — "
+                        "nur im Arbeitsspeicher."
+                    )
             self._refresh_results()
             self.lbl_message.configure(text="")
-            source = "cached index" if from_cache else "index rebuilt"
+            source = "Index aus Cache" if from_cache else "Index neu aufgebaut"
             self._set_status(
-                f"{len(self.model_names):,} models "
-                f"({len(self.state_models):,} with build states) — "
+                f"{de_num(len(self.model_names))} Modelle "
+                f"({de_num(len(self.state_models))} mit Baustufen) — "
                 f"{source} — {self.pak_path}"
             )
 
@@ -793,8 +820,8 @@ def _run_ui(hook=None):
             self.list_results.delete(0, "end")
             for name in self.shown:
                 self.list_results.insert("end", name)
-            scope = "models" if self.var_show_all.get() else "models with states"
-            self.lbl_results.configure(text=f"{len(self.shown):,} {scope}")
+            scope = "Modelle" if self.var_show_all.get() else "Modelle mit Status"
+            self.lbl_results.configure(text=f"{de_num(len(self.shown))} {scope}")
 
         def _on_pick_model(self):
             selection = self.list_results.curselection()
@@ -811,7 +838,7 @@ def _run_ui(hook=None):
                 self.combo_sources.grid(row=0, column=0, sticky="we")
                 self.lbl_multi.grid(row=1, column=0, sticky="w", pady=(4, 0))
                 self.lbl_multi.configure(
-                    text=f"Found in {len(paths)} locations — pick one above."
+                    text=f"An {len(paths)} Orten gefunden — bitte oben auswählen."
                 )
             else:
                 self.combo_sources.grid_forget()
@@ -820,7 +847,10 @@ def _run_ui(hook=None):
                 self.var_source.set(paths[0])
                 self._load_stages(paths[0])
             else:
-                self._set_stages([], "This model is no longer in the index. Rebuild the index.")
+                self._set_stages(
+                    [],
+                    "Dieses Modell ist nicht mehr im Index. Bitte Index neu aufbauen.",
+                )
 
         def _on_pick_source(self):
             path = self.var_source.get()
@@ -841,16 +871,19 @@ def _run_ui(hook=None):
                 self._set_stages([], str(exc))
                 return
             if not stages:
-                self._set_stages([], "No build stages defined in this model.", error=False)
+                self._set_stages(
+                    [], "In diesem Modell sind keine Baustufen definiert.", error=False
+                )
                 return
             notes = []
             if chain:
                 notes.append(
-                    f"Inherited via <_parent> from {chain[-1]}\n{origin}"
+                    f"Über <_parent> geerbt von {chain[-1]}\n{origin}"
                 )
             if any(s != s.strip() for s in stages):
-                notes.append("Warning: some names have leading/trailing whitespace. "
-                             "They are shown and copied exactly as stored.")
+                notes.append("Achtung: Einige Namen haben Leerzeichen am Anfang oder Ende. "
+                             "Sie werden exakt so angezeigt und kopiert, wie sie "
+                             "gespeichert sind.")
             self._set_stages(stages, "\n".join(notes), error=False)
 
         def _set_stages(self, stages, message="", error=True):
@@ -868,18 +901,19 @@ def _run_ui(hook=None):
             self.root.clipboard_clear()
             self.root.clipboard_append(text)
             self.root.update_idletasks()
-            self._flash_copied(f"Copied {label}")
+            self._flash_copied(f"{label} kopiert")
 
         def _copy_all(self):
             if not self.current_stages:
                 return
-            self._copy("\n".join(self.current_stages),
-                       f"{len(self.current_stages)} state name(s)")
+            count = len(self.current_stages)
+            label = "1 Statusname" if count == 1 else f"{count} Statusnamen"
+            self._copy("\n".join(self.current_stages), label)
 
         def _copy_path(self):
             path = self.entry_path.get()
             if path:
-                self._copy(path, "archive path")
+                self._copy(path, "Archivpfad")
 
         def _on_click_stage(self, event):
             index = self.list_stages.nearest(event.y)
@@ -952,7 +986,8 @@ def main(hook=None):
     try:
         import tkinter  # noqa: F401
     except ImportError:
-        print("This tool needs Python with Tkinter (standard on the python.org installer).")
+        print("Dieses Programm benötigt Python mit Tkinter "
+              "(im Installer von python.org standardmäßig enthalten).")
         return 1
     _run_ui(hook)
     return 0

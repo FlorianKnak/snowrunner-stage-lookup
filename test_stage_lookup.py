@@ -427,6 +427,16 @@ class TestConfigAndCache(unittest.TestCase):
         self.assertIsNone(sl.load_cache(self.pak))
 
 
+class TestGermanNumberFormat(unittest.TestCase):
+    def test_thousands_use_a_period(self):
+        self.assertEqual(sl.de_num(4740), "4.740")
+        self.assertEqual(sl.de_num(1234567), "1.234.567")
+
+    def test_small_numbers_unchanged(self):
+        self.assertEqual(sl.de_num(0), "0")
+        self.assertEqual(sl.de_num(308), "308")
+
+
 class TestAutodetect(unittest.TestCase):
     def test_candidates_include_steam_epic_and_drives_d_to_h(self):
         candidates = [str(p).lower() for p in sl.candidate_game_roots()]

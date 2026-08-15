@@ -79,6 +79,12 @@ the archive, not placeholders. DLC ids look like `us_03`, `ru_08`, `dlc_11`.
   clipboard support is not optional.
 - **Read-only.** The tool never writes to `initial.pak` or the game folder.
   Its only writes are its own config and cache files in the user config dir.
+- **The UI is German; the code is English.** Every user-facing string — window
+  titles, buttons, status lines, `PakError`/`ParseError` messages — is German,
+  and new ones must be too. Numbers go through `de_num()` for `4.740`-style
+  grouping. Identifiers, comments, docstrings, tests, and `CLAUDE.md`/`PROMPT.md`
+  stay English. **State names from the game are data and are never translated,
+  re-cased, or trimmed** — not in the UI, not in the clipboard, not in docs.
 - **No third-party dependencies.** `zipfile`, `xml.etree`, and `tkinter` are all
   stdlib. This has to be runnable by a modder who doesn't manage Python
   environments — ideally a single file, ideally freezable to a .exe later.
