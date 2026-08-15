@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller build output
+build/
+dist/
+*.spec
+
+# Extracted text of the official SnowRunner Editor Guide.
+# Reference material only, not redistributable, and not read at runtime.
+pages.json
