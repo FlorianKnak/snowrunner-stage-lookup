@@ -17,7 +17,7 @@ Auslesen von `<Subset>`-Tags.
 kein Installer, kein Python nötig. Irgendwo hinlegen und doppelklicken.
 
 > **Windows warnt beim ersten Start.** Die EXE ist nicht signiert, deshalb zeigt
-> SmartScreen *„Der Computer wurde durch Windows geschützt"*. Auf **Weitere
+> SmartScreen *„Der Computer wurde durch Windows geschützt“*. Auf **Weitere
 > Informationen** → **Trotzdem ausführen** klicken. Wer das nicht möchte, kann
 > das Programm stattdessen aus dem Quellcode starten (siehe unten).
 
@@ -32,7 +32,7 @@ kein Installer, kein Python nötig. Irgendwo hinlegen und doppelklicken.
    die komplette Liste. `Strg+C` kopiert ebenfalls alle, `Esc` leert die Suche.
 
 Statusnamen werden **exakt** so kopiert, wie sie in den Spieldateien stehen —
-niemals umbenannt, umformatiert oder „bereinigt". Der Editor braucht sie
+niemals umbenannt, umformatiert oder „bereinigt“. Der Editor braucht sie
 wortwörtlich; ein Tippfehler zerstört die Bau-Animation stillschweigend.
 
 Kommt ein Modell sowohl im Grundspiel als auch in einem DLC vor, erscheint ein
@@ -50,7 +50,7 @@ wäre der naheliegende Weg und er ist falsch. Gemessen am ausgelieferten Archiv:
 - 30 nutzbare Modelle tragen `_objective` *mitten* im Namen
   (`conveyor_objective_01`, `cube_objective_09`,
   `rus_controlbunker_02_1_part_objectives`).
-- 9 weitere haben überhaupt kein „objective" im Namen, definieren aber echte
+- 9 weitere haben überhaupt kein „objective“ im Namen, definieren aber echte
   Baustufen — `concrete_block_01_us_07`, `tatra_steamshop`,
   `railway_switch_01_ru17`, `race_scene_us07`, `rus_launchpad_hangar_01_doors`
   und andere.
@@ -61,7 +61,7 @@ eines an, das nicht funktioniert. Dieses Programm liest stattdessen die
 `<Subset>`-Tags und folgt der Vererbung über `<_parent>`, sodass Modelle wie
 `rocket_broken_02_objective` weiterhin die geerbten Status anzeigen.
 
-Mit dem Häkchen **„Auch Modelle ohne Status anzeigen"** lassen sich alle 4.740
+Mit dem Häkchen **„Auch Modelle ohne Status anzeigen“** lassen sich alle 4.740
 Modellklassen durchsuchen.
 
 ## Vorkommende Statusnamen
